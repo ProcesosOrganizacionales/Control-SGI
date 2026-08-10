@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panorama de hallazgos · SGI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== Estilos aislados: todo cuelga de #sgi-hallazgos ===== */
+  #sgi-hallazgos{
+    --ink:#0B2140; --navy:#0A2A5E; --ntt:#0064B0;
+    --slate:#4A5A70; --mute:#7C8AA0; --panel:#F5F7FA; --line:#E2E7EE;
+    --mayor:#C1272D; --menor:#E08526; --obs:#E7B926; --oport:#0072CE; --ok:#2E9E6B;
+    font-family:'Inter',-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink); line-height:1.55; -webkit-font-smoothing:antialiased;
+    max-width:920px; margin:0 auto; padding:8px;
+  }
+  #sgi-hallazgos *{box-sizing:border-box;}
+  #sgi-hallazgos section{margin-top:30px;}
+  #sgi-hallazgos section:first-child{margin-top:0;}
+  #sgi-hallazgos h2{font-family:'Archivo';font-weight:700;font-size:19px;margin:0 0 4px;color:var(--ink);}
+  #sgi-hallazgos .sub{font-size:13px;color:var(--mute);margin:0 0 20px;}
+
+  /* KPIs */
+  #sgi-hallazgos .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  #sgi-hallazgos .kpi{border:1px solid var(--line);border-radius:8px;padding:16px 16px 14px;position:relative;overflow:hidden;background:#fff;}
+  #sgi-hallazgos .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;}
+  #sgi-hallazgos .kpi.k-mayor::before{background:var(--mayor);}
+  #sgi-hallazgos .kpi.k-menor::before{background:var(--menor);}
+  #sgi-hallazgos .kpi.k-obs::before{background:var(--obs);}
+  #sgi-hallazgos .kpi.k-oport::before{background:var(--oport);}
+  #sgi-hallazgos .kpi .n{font-family:'IBM Plex Mono';font-weight:600;font-size:32px;color:var(--ink);line-height:1;}
+  #sgi-hallazgos .kpi .l{font-size:12px;color:var(--slate);margin-top:8px;font-weight:500;}
+  #sgi-hallazgos .kpi .p{font-size:11px;color:var(--mute);font-family:'IBM Plex Mono';margin-top:3px;}
+
+  /* Pills resumen */
+  #sgi-hallazgos .totals{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap;}
+  #sgi-hallazgos .tpill{flex:1;min-width:170px;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--panel);}
+  #sgi-hallazgos .tpill .n{font-family:'IBM Plex Mono';font-weight:600;font-size:26px;color:var(--navy);}
+  #sgi-hallazgos .tpill .l{font-size:12px;color:var(--slate);margin-top:4px;}
+  #sgi-hallazgos .tpill .l b{color:var(--ok);}
+
+  /* Barra de composición */
+  #sgi-hallazgos .distro{display:flex;height:30px;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(11,33,64,.05);}
+  #sgi-hallazgos .distro span{display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono';font-weight:600;font-size:12px;}
+  #sgi-hallazgos .distro .s-obs{color:#5a4a00;}
+  #sgi-hallazgos .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;}
+  #sgi-hallazgos .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--slate);}
+  #sgi-hallazgos .dot{width:11px;height:11px;border-radius:2px;display:inline-block;}
+
+  /* Gráfica: hallazgos por área */
+  #sgi-hallazgos .chart{margin-top:2px;}
+  #sgi-hallazgos .row{display:grid;grid-template-columns:150px 1fr 34px;align-items:center;gap:14px;padding:5px 0;}
+  #sgi-hallazgos .row .name{font-size:13px;color:var(--ink);text-align:right;font-weight:500;}
+  #sgi-hallazgos .row .name.zero{color:var(--mute);font-weight:400;}
+  #sgi-hallazgos .track{height:24px;background:var(--panel);border-radius:4px;display:flex;overflow:hidden;}
+  #sgi-hallazgos .seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:#fff;min-width:0;}
+  #sgi-hallazgos .seg.s-obs{color:#5a4a00;}
+  #sgi-hallazgos .row .tot{font-family:'IBM Plex Mono';font-weight:600;font-size:14px;color:var(--navy);text-align:left;}
+  #sgi-hallazgos .row .tot.z{color:var(--line);}
+  #sgi-hallazgos .track.empty{background:repeating-linear-gradient(45deg,#F0F3F7 0 6px,#F5F7FA 6px 12px);}
+
+  @media (max-width:640px){
+    #sgi-hallazgos .kpis{grid-template-columns:repeat(2,1fr);}
+    #sgi-hallazgos .row{grid-template-columns:118px 1fr 28px;gap:8px;}
+    #sgi-hallazgos .row .name{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="sgi-hallazgos">
+
+  <!-- PANORAMA GENERAL -->
+  <section>
+    <h2>Panorama general</h2>
+    <p class="sub">Distribución de los 52 hallazgos por tipo</p>
+    <div class="kpis">
+      <div class="kpi k-mayor"><div class="n">16</div><div class="l">No conformidad mayor</div><div class="p">31% del total</div></div>
+      <div class="kpi k-menor"><div class="n">20</div><div class="l">No conformidad menor</div><div class="p">38% del total</div></div>
+      <div class="kpi k-obs"><div class="n">5</div><div class="l">Observación</div><div class="p">10% del total</div></div>
+      <div class="kpi k-oport"><div class="n">11</div><div class="l">Oportunidad de mejora</div><div class="p">21% del total</div></div>
+    </div>
+    <div class="totals">
+      <div class="tpill"><div class="n">11 de 12</div><div class="l">áreas con hallazgos · <b>1 área sin hallazgos</b></div></div>
+      <div class="tpill"><div class="n">31%</div><div class="l">son observaciones y oportunidades de mejora</div></div>
+      <div class="tpill"><div class="n">100%</div><div class="l">del alcance del SGI auditado en el ciclo</div></div>
+    </div>
+  </section>
+
+  <!-- COMPOSICIÓN -->
+  <section>
+    <h2>Composición de los hallazgos</h2>
+    <p class="sub">Proporción de cada tipo sobre el total</p>
+    <div class="distro">
+      <span style="width:31%;background:var(--mayor)">31%</span>
+      <span style="width:38%;background:var(--menor)">38%</span>
+      <span class="s-obs" style="width:10%;background:var(--obs)">10%</span>
+      <span style="width:21%;background:var(--oport)">21%</span>
+    </div>
+    <div class="legend">
+      <span class="lg"><i class="dot" style="background:var(--mayor)"></i>NC mayor</span>
+      <span class="lg"><i class="dot" style="background:var(--menor)"></i>NC menor</span>
+      <span class="lg"><i class="dot" style="background:var(--obs)"></i>Observación</span>
+      <span class="lg"><i class="dot" style="background:var(--oport)"></i>Oportunidad de mejora</span>
+    </div>
+  </section>
+
+  <!-- HALLAZGOS POR ÁREA -->
+  <section>
+    <h2>Hallazgos por área</h2>
+    <p class="sub">Total de hallazgos por área · ordenado de mayor a menor · desglose por tipo dentro de cada barra</p>
+    <div class="chart">
+      <div class="row"><div class="name">SOC</div>
+        <div class="track">
+          <div class="seg" style="width:30.8%;background:var(--mayor)">4</div>
+          <div class="seg" style="width:30.8%;background:var(--menor)">4</div>
+          <div class="seg s-obs" style="width:15.4%;background:var(--obs)">2</div>
+          <div class="seg" style="width:23.0%;background:var(--oport)">3</div>
+        </div><div class="tot">13</div></div>
+      <div class="row"><div class="name">NOC</div>
+        <div class="track">
+          <div class="seg" style="width:23.0%;background:var(--mayor)">3</div>
+          <div class="seg" style="width:38.5%;background:var(--menor)">5</div>
+          <div class="seg s-obs" style="width:7.7%;background:var(--obs)">1</div>
+          <div class="seg" style="width:30.8%;background:var(--oport)">4</div>
+        </div><div class="tot">13</div></div>
+      <div class="row"><div class="name">Certificaciones ISO</div>
+        <div class="track" style="width:61.5%">
+          <div class="seg" style="width:62.5%;background:var(--mayor)">5</div>
+          <div class="seg" style="width:25%;background:var(--menor)">2</div>
+          <div class="seg s-obs" style="width:12.5%;background:var(--obs)">1</div>
+        </div><div class="tot">8</div></div>
+      <div class="row"><div class="name">People &amp; Culture</div>
+        <div class="track" style="width:46.2%">
+          <div class="seg" style="width:50%;background:var(--mayor)">3</div>
+          <div class="seg" style="width:50%;background:var(--menor)">3</div>
+        </div><div class="tot">6</div></div>
+      <div class="row"><div class="name">Gestión de la Procura</div>
+        <div class="track" style="width:30.8%">
+          <div class="seg" style="width:25%;background:var(--mayor)">1</div>
+          <div class="seg" style="width:75%;background:var(--menor)">3</div>
+        </div><div class="tot">4</div></div>
+      <div class="row"><div class="name">PMO</div>
+        <div class="track" style="width:23.0%">
+          <div class="seg" style="width:33.3%;background:var(--menor)">1</div>
+          <div class="seg" style="width:66.7%;background:var(--oport)">2</div>
+        </div><div class="tot">3</div></div>
+      <div class="row"><div class="name">Ventas</div>
+        <div class="track" style="width:7.7%">
+          <div class="seg s-obs" style="width:100%;background:var(--obs)">1</div>
+        </div><div class="tot">1</div></div>
+      <div class="row"><div class="name">Pre Ventas</div>
+        <div class="track" style="width:7.7%">
+          <div class="seg" style="width:100%;background:var(--oport)">1</div>
+        </div><div class="tot">1</div></div>
+      <div class="row"><div class="name">Renovaciones</div>
+        <div class="track" style="width:7.7%">
+          <div class="seg" style="width:100%;background:var(--oport)">1</div>
+        </div><div class="tot">1</div></div>
+      <div class="row"><div class="name">Gestión Legal</div>
+        <div class="track" style="width:7.7%">
+          <div class="seg" style="width:100%;background:var(--menor)">1</div>
+        </div><div class="tot">1</div></div>
+      <div class="row"><div class="name">Tecnologías de la información</div>
+        <div class="track" style="width:7.7%">
+          <div class="seg" style="width:100%;background:var(--menor)">1</div>
+        </div><div class="tot">1</div></div>
+      <div class="row"><div class="name zero">Procesos</div>
+        <div class="track empty" style="width:7.7%"></div><div class="tot z">0</div></div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
